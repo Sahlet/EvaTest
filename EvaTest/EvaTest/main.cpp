@@ -95,7 +95,7 @@ bool testSplittedCheck(const std::list<records::CheckRow>& srcCheck, const std::
         std::wstring name;
         unsigned int priceForOne = 0;
 
-        bool operator < (const Key& right)
+        bool operator < (const Key& right) const
         {
             bool nameLess = this->name < right.name;
             if (nameLess)
@@ -134,7 +134,7 @@ bool testSplittedCheck(const std::list<records::CheckRow>& srcCheck, const std::
 
     for (auto& elem : splittedCheck)
     {
-        processedData.insert({ elem.name, elem.priceForOne }, elem);
+        processedData.emplace(Key{ elem.name, elem.priceForOne }, elem);
     }
 
     try
