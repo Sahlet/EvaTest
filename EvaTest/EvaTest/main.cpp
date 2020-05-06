@@ -28,7 +28,8 @@ std::list<records::CheckRow> createTestData()
         { L"P", 130, 16, 100 },
         { L"Q", 140, 17, 100 },
         { L"R", 150, 18, 100 },
-        { L"S", 160, 19, 100 }
+        { L"S", 160, 19, 100 },
+        { L"T", 5, 11, 39 }
     };
 }
 
@@ -103,7 +104,7 @@ bool testSplittedCheck(const std::list<records::CheckRow>& srcCheck, const std::
                 return nameLess;
             }
 
-            if (this->name != right.name)
+            if (this->name == right.name)
             {
                 return this->priceForOne < right.priceForOne;
             }
@@ -137,70 +138,62 @@ bool testSplittedCheck(const std::list<records::CheckRow>& srcCheck, const std::
         processedData.emplace(Key{ elem.name, elem.priceForOne }, elem);
     }
 
-    try
-    {
 #pragma region Test: srcCheck has no invalid data
-        for (auto& elem : srcCheck)
-        {
-            assert(elem.count >= 1);
-            assert(elem.priceForOne >= 1);
-            assert(elem.count * elem.priceForOne >= elem.sumDiscount);
-        }
+    for (auto& elem : srcCheck)
+    {
+        assert(elem.count >= 1);
+        assert(elem.priceForOne >= 1);
+        assert(elem.count * elem.priceForOne >= elem.sumDiscount);
+    }
 #pragma endregion
 
 #pragma region Test: splittedCheck has no invalid data
-        for (auto& elem : splittedCheck)
-        {
-            assert(elem.count >= 1);
-            assert(elem.priceForOne >= 1);
-            assert(elem.count * elem.priceForOne >= elem.sumDiscount);
-        }
+    for (auto& elem : splittedCheck)
+    {
+        assert(elem.count >= 1);
+        assert(elem.priceForOne >= 1);
+        assert(elem.count * elem.priceForOne >= elem.sumDiscount);
+    }
 #pragma endregion
 
 #pragma region Test: equal key set
-        for (auto& elem : srcData)
-        {
-            auto iter = processedData.find(elem.first);
-            assert(iter != processedData.end());
-        }
+    for (auto& elem : srcData)
+    {
+        auto iter = processedData.find(elem.first);
+        assert(iter != processedData.end());
+    }
 
-        for (auto& elem : processedData)
-        {
-            auto iter = srcData.find(elem.first);
-            assert(iter != srcData.end());
-        }
+    for (auto& elem : processedData)
+    {
+        auto iter = srcData.find(elem.first);
+        assert(iter != srcData.end());
+    }
 #pragma endregion
 
 #pragma region Test: sum count and discount same with src count end discount
-        for (auto& elem : srcData)
-        {
-            auto range = processedData.equal_range(elem.first);
+    for (auto& elem : srcData)
+    {
+        auto range = processedData.equal_range(elem.first);
 
-            unsigned int count = 0;
-            unsigned int sumDiscount = 0;
-            for (auto iter = range.first; iter != range.second; iter++)
-            {
-                count += iter->second.count;
-                sumDiscount += iter->second.sumDiscount;
-            }
-            
-            assert(count == elem.second.count);
-            assert(sumDiscount == elem.second.sumDiscount);
+        unsigned int count = 0;
+        unsigned int sumDiscount = 0;
+        for (auto iter = range.first; iter != range.second; iter++)
+        {
+            count += iter->second.count;
+            sumDiscount += iter->second.sumDiscount;
         }
+
+        assert(count == elem.second.count);
+        assert(sumDiscount == elem.second.sumDiscount);
+    }
 #pragma endregion
 
 #pragma region discount is divided by count in splittedCheck
-        for (auto& elem : splittedCheck)
-        {
-            assert((elem.sumDiscount % elem.count) == 0);
-        }
-#pragma endregion
-    }
-    catch (const std::exception& e)
+    for (auto& elem : splittedCheck)
     {
-        std::cerr << e.what() << std::endl;
-        return false;
+        assert((elem.sumDiscount % elem.count) == 0);
     }
+#pragma endregion
 
     return true;
 }
@@ -208,9 +201,7 @@ bool testSplittedCheck(const std::list<records::CheckRow>& srcCheck, const std::
 int main()
 {
     auto check = createTestData();
-    auto splittedCheck = check;
-
-    splitByDiscount(splittedCheck);
+    auto splittedCheck = splitByDiscount(check);
 
     std::cout <<
         (testSplittedCheck(check, splittedCheck) && testSplittingWithInvalidData()

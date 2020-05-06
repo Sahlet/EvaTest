@@ -1,6 +1,33 @@
 #include "DiscountSplitter.h"
 
-void splitByDiscount(std::list<records::CheckRow>& check)
+static std::list<records::CheckRow> split(const records::CheckRow& row)
+{
+	if ((row.sumDiscount % row.count) == 0)
+	{
+		return { row };
+	}
+
+	records::CheckRow part1 = row;
+	records::CheckRow part2 = row;
+	
+	part2.count = 0;
+	part2.sumDiscount = 0;
+
+	do {
+		part1.count--;
+		part2.count++;
+		part2.sumDiscount = row.sumDiscount % part1.count;
+		part1.sumDiscount = row.sumDiscount - part2.sumDiscount;
+	} while (part2.sumDiscount > (part2.count * part2.priceForOne));
+
+	auto res = split(part2);
+
+	res.emplace_front(std::move(part1));
+
+	return std::move(res);
+}
+
+std::list<records::CheckRow> splitByDiscount(const std::list<records::CheckRow>& check)
 {
 	for (auto& row : check)
 	{
@@ -20,5 +47,13 @@ void splitByDiscount(std::list<records::CheckRow>& check)
 		}
 	}
 
+	std::list<records::CheckRow> res;
 
+	for (auto& row : check)
+	{
+		auto splittedRow = split(row);
+		res.insert(res.end(), splittedRow.begin(), splittedRow.end());
+	}
+
+	return std::move(res);
 }

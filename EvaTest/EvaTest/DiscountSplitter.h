@@ -2,4 +2,4 @@
 #include <list>
 #include "Records.h"
 
-void splitByDiscount(std::list<records::CheckRow>& check);
+std::list<records::CheckRow> splitByDiscount(const std::list<records::CheckRow>& check);
