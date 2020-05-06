@@ -1,0 +1,14 @@
+#VS
+EvaTest/.vs/*
+
+EvaTest/Debug/*
+EvaTest/Release/*
+
+EvaTest/EvaTest/Debug/*
+EvaTest/EvaTest/Release/*
+
+EvaTest/x64/Debug/*
+EvaTest/x64/Release/*
+
+EvaTest/EvaTest/x64/Debug/*
+EvaTest/EvaTest/x64/Release/*
