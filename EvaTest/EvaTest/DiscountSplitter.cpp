@@ -1,31 +1,40 @@
 #include "DiscountSplitter.h"
 
-static std::list<records::CheckRow> split(const records::CheckRow& row)
-{
-	if ((row.sumDiscount % row.count) == 0)
+namespace {
+	template<class T>
+	T min(const T& l, const T& r)
 	{
-		return { row };
+		return l < r ? l : r;
 	}
 
-	records::CheckRow part1 = row;
-	records::CheckRow part2 = row;
-	
-	part2.count = 0;
-	part2.sumDiscount = 0;
+	std::list<records::CheckRow> split(const records::CheckRow& row)
+	{
+		if ((row.sumDiscount % row.count) == 0)
+		{
+			return { row };
+		}
 
-	do {
-		part1.count--;
-		part2.count++;
-		part2.sumDiscount = row.sumDiscount % part1.count;
-		part1.sumDiscount = row.sumDiscount - part2.sumDiscount;
-	} while (part2.sumDiscount > (part2.count * part2.priceForOne));
+		records::CheckRow part1 = row;
+		records::CheckRow part2 = row;
 
-	auto res = split(part2);
+		part2.count = 0;
+		part2.sumDiscount = 0;
 
-	res.emplace_front(std::move(part1));
+		do {
+			part1.count--;
+			part2.count++;
+			auto rest = row.sumDiscount % part1.count;
+			part1.sumDiscount = min(row.sumDiscount - rest, part1.count * row.priceForOne);
+			part2.sumDiscount = row.sumDiscount - part1.sumDiscount;
+		} while (part2.sumDiscount > (part2.count * row.priceForOne));
 
-	return std::move(res);
-}
+		auto res = split(part2);
+
+		res.emplace_front(std::move(part1));
+
+		return std::move(res);
+	}
+} // namespace
 
 std::list<records::CheckRow> splitByDiscount(const std::list<records::CheckRow>& check)
 {
